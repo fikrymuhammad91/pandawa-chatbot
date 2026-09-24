@@ -194,7 +194,7 @@ const response = await fetch(
 
 const data = await response.json();
 
-        addMessage(JSON.stringify(data), "bot");
+        addMessage(data.reply, "bot");
 
     } catch (error) {
 
