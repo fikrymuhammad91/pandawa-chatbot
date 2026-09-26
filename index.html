@@ -10,6 +10,12 @@
 
     <title>Pandawa Chatbot</title>
 
+    <!-- MARKDOWN RENDERER -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- HTML SANITIZER -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
+
 
     <style>
 
@@ -117,7 +123,7 @@
 
             border-radius: 10px;
 
-            line-height: 1.4;
+            line-height: 1.5;
 
             font-size: 14px;
 
@@ -140,6 +146,139 @@
             background: #d9fdd3;
 
             margin-left: auto;
+
+        }
+
+
+        /* =========================
+           MARKDOWN
+        ========================= */
+
+        .message p {
+
+            margin-top: 0;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .message p:last-child {
+
+            margin-bottom: 0;
+
+        }
+
+
+        .message strong {
+
+            font-weight: 700;
+
+        }
+
+
+        .message em {
+
+            font-style: italic;
+
+        }
+
+
+        .message ul,
+        .message ol {
+
+            margin-top: 6px;
+
+            margin-bottom: 8px;
+
+            padding-left: 22px;
+
+        }
+
+
+        .message li {
+
+            margin-bottom: 4px;
+
+        }
+
+
+        .message h1,
+        .message h2,
+        .message h3 {
+
+            margin-top: 10px;
+
+            margin-bottom: 6px;
+
+        }
+
+
+        .message code {
+
+            background: #f1f1f1;
+
+            padding: 2px 5px;
+
+            border-radius: 4px;
+
+            font-family: monospace;
+
+        }
+
+
+        .message pre {
+
+            background: #f5f5f5;
+
+            padding: 10px;
+
+            border-radius: 8px;
+
+            overflow-x: auto;
+
+        }
+
+
+        .message pre code {
+
+            background: none;
+
+            padding: 0;
+
+        }
+
+
+        .message table {
+
+            border-collapse: collapse;
+
+            width: 100%;
+
+            margin-top: 8px;
+
+            margin-bottom: 8px;
+
+            font-size: 13px;
+
+        }
+
+
+        .message th,
+        .message td {
+
+            border: 1px solid #ddd;
+
+            padding: 6px 8px;
+
+            text-align: left;
+
+        }
+
+
+        .message th {
+
+            background: #f5f5f5;
 
         }
 
@@ -509,6 +648,7 @@ input.addEventListener(
 
 
         // Jika terlalu pendek
+
         if (query.length < 3) {
 
             hideSuggestions();
@@ -543,7 +683,6 @@ input.addEventListener(
 async function searchSuggestions(query) {
 
     try {
-
 
         const response =
             await fetch(
@@ -625,6 +764,7 @@ function showSuggestions(data) {
                 <div class="suggestion-question">
 
                     🔎
+
                     ${escapeHtml(
                         item.pertanyaan
                     )}
@@ -635,6 +775,7 @@ function showSuggestions(data) {
                     item.kategori
                     ?
                     `
+
                     <div class="suggestion-category">
 
                         ${escapeHtml(
@@ -642,6 +783,7 @@ function showSuggestions(data) {
                         )}
 
                     </div>
+
                     `
                     :
                     ""
@@ -688,6 +830,7 @@ async function selectSuggestion(item) {
 
 
     // Tampilkan pertanyaan yang dipilih
+
     addMessage(
         item.pertanyaan,
         "user"
@@ -695,6 +838,7 @@ async function selectSuggestion(item) {
 
 
     // Tampilkan loading
+
     const loading =
         addMessage(
             "Sedang mengambil jawaban...",
@@ -899,6 +1043,7 @@ async function sendMessage() {
             "bot"
         );
 
+
     } finally {
 
 
@@ -938,13 +1083,44 @@ function addMessage(
 
 
     /*
-     * Untuk jawaban AI kita menggunakan
-     * textContent agar HTML dari AI
-     * tidak dieksekusi.
+     * Render Markdown dari AI.
+     *
+     * marked = mengubah Markdown menjadi HTML.
+     *
+     * DOMPurify = membersihkan HTML berbahaya
+     * sebelum dimasukkan ke halaman.
      */
 
-    message.textContent =
-        text;
+    try {
+
+        const rendered =
+            marked.parse(
+                String(text)
+            );
+
+
+        message.innerHTML =
+            DOMPurify.sanitize(
+                rendered
+            );
+
+    } catch (error) {
+
+        /*
+         * Fallback jika Markdown renderer
+         * mengalami masalah.
+         */
+
+        console.error(
+            "Markdown render error:",
+            error
+        );
+
+
+        message.textContent =
+            text;
+
+    }
 
 
     chat.appendChild(
